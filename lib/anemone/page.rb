@@ -70,6 +70,30 @@ module Anemone
     end
 
     #
+    # Returns the page title
+    #
+    def title
+      return @title unless @title.nil?
+      @title = !doc ? "" : doc.title
+    end
+
+    #
+    # Returns the meta description tag content
+    #
+    def meta_decription
+      return @meta_description unless @meta_description.nil?
+      @meta_description = !doc ? "" : doc.at_xpath(".//meta[@name='description']",".//meta[@name='Description']").attr('content')
+    end
+
+    #
+    # Returns the first H1 header on the page
+    #
+    def h1_header
+      return @h1_header unless @h1_header.nil?
+      @h1_header = !doc ? "" : doc.at_xpath(".//h1").text
+    end
+
+    #
     # Nokogiri document for the HTML body
     #
     def doc
@@ -127,6 +151,14 @@ module Anemone
     # Returns +true+ if the page was not found (returned 404 code),
     # returns +false+ otherwise.
     #
+    def error_status?
+      (400..417).include?(@code)
+    end
+
+    #
+    # Returns +true+ if the page was not found (returned 404 code),
+    # returns +false+ otherwise.
+    #
     def not_found?
       404 == @code
     end
@@ -140,7 +172,7 @@ module Anemone
         href = doc.search('//head/base/@href')
         URI(href.to_s) unless href.nil? rescue nil
       end unless @base
-      
+
       return nil if @base && @base.to_s().empty?
       @base
     end
@@ -185,7 +217,7 @@ module Anemone
        'headers' => Marshal.dump(@headers),
        'data' => Marshal.dump(@data),
        'body' => @body,
-       'links' => links.map(&:to_s), 
+       'links' => links.map(&:to_s),
        'code' => @code,
        'visited' => @visited,
        'depth' => @depth,
